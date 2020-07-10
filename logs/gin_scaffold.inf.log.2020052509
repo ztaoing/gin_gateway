@@ -1,0 +1,2 @@
+[INFO][2020-05-25T10:07:52.515][log.go:58] _com_request_in||uri=/demo/dao?id=1||method=GET||args=map[]||body=||from=127.0.0.1||traceid=c0a8bc9f5ecb28781f10077b658221b0||cspanid=||spanid=9e6394e778629a0f
+[INFO][2020-05-25T10:07:52.515][log.go:58] _com_request_out||uri=/demo/dao?id=1||args=map[]||proc_time=0.000526526||traceid=c0a8bc9f5ecb28781f10077b658221b0||spanid=9e6394e778629a0f||method=GET||from=127.0.0.1||response={\"errno\":2000,\"errmsg\":\"get pool error\",\"data\":\"\",\"trace_id\":\"c0a8bc9f5ecb28781f10077b658221b0\",\"stack\":\"get pool error\"}||cspanid=
