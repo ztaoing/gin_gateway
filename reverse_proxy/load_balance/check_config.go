@@ -98,6 +98,7 @@ func (l *LoadBalanceCheckConf) UpdateConf(conf []string) {
 
 }
 
+//生成负载均衡的配置
 func NewLoadBalanceCheckConf(format string, confIpWeight map[string]string) (*LoadBalanceCheckConf, error) {
 	aList := []string{}
 	for item, _ := range confIpWeight {

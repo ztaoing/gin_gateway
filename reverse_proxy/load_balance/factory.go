@@ -27,7 +27,7 @@ func LoadBanlanceFactory(types LbType) LoadBalance {
 	}
 }
 
-func LoadBalanceWithConf(types LbType, conf LoadBalanceConf) LoadBalance {
+func LoadBalanceFactoryWithConf(types LbType, conf LoadBalanceConf) LoadBalance {
 	//观察者模式
 	switch types {
 	case LbRandom:

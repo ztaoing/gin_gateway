@@ -1,10 +1,16 @@
 package dao
 
 import (
+	"fmt"
 	"github.com/e421083458/gorm"
 	"github.com/gin-gonic/gin"
 	"github.com/go1234.cn/gin_scaffold/public"
+	"github.com/go1234.cn/gin_scaffold/reverse_proxy/load_balance"
+	"net"
+	"net/http"
 	"strings"
+	"sync"
+	"time"
 )
 
 type LoadBalance struct {
@@ -44,4 +50,144 @@ func (t *LoadBalance) Save(c *gin.Context, tx *gorm.DB) error {
 func (t *LoadBalance) GetIPListByMode() []string {
 
 	return strings.Split(t.IpList, ",")
+}
+
+func (t *LoadBalance) GetWeightListByMode() []string {
+
+	return strings.Split(t.WeightList, ",")
+}
+
+var LoadBalancerHandler *LoadBalancer
+
+//
+type LoadBalancer struct {
+	LoadBalanceMap   map[string]*LoadBalanceItem
+	LoadBalanceSlice []*LoadBalanceItem
+	Locker           sync.RWMutex
+}
+type LoadBalanceItem struct {
+	LoadBalance load_balance.LoadBalance
+	ServiceName string
+}
+
+func NewLoadBalancerHandler() *LoadBalancer {
+	return &LoadBalancer{
+		LoadBalanceMap:   map[string]*LoadBalanceItem{},
+		LoadBalanceSlice: []*LoadBalanceItem{},
+		Locker:           sync.RWMutex{},
+	}
+}
+
+//获取loadbalance
+func (l *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.LoadBalance, error) {
+	//验证是否存在
+	for _, lbItem := range l.LoadBalanceSlice {
+		if lbItem.ServiceName == service.Info.ServiceName {
+			return lbItem.LoadBalance, nil
+		}
+	}
+	//前缀
+	schema := "http"
+	if service.HTTPRule.NeedHttps == 1 {
+		schema = "https"
+	}
+
+	//前缀方式
+	prefix := ""
+	if service.HTTPRule.RuleType == public.HTTPRuleTypePrefixURL {
+		prefix = service.HTTPRule.Rule
+	}
+
+	ipList := service.LoadBalance.GetIPListByMode()
+	weightList := service.LoadBalance.GetWeightListByMode()
+
+	ipConf := map[string]string{}
+	for k, v := range ipList {
+		ipConf[v] = weightList[k]
+	}
+
+	Conf, err := load_balance.NewLoadBalanceCheckConf(fmt.Sprintf("%s://%s", schema, prefix), ipConf)
+	if err != nil {
+		return nil, err
+	}
+
+	//生成负载均衡器
+	lb := load_balance.LoadBalanceFactoryWithConf(load_balance.LbWeightRoundRobin, Conf)
+
+	//保存到map和slice中
+	lbItem := &LoadBalanceItem{
+		LoadBalance: lb,
+		ServiceName: service.Info.ServiceName,
+	}
+
+	l.LoadBalanceSlice = append(l.LoadBalanceSlice, lbItem)
+
+	l.Locker.Lock()
+	defer l.Locker.Unlock()
+	l.LoadBalanceMap[service.Info.ServiceName] = lbItem
+	return lb, nil
+
+}
+
+//连接池
+//每一个服务使用一个单独的连接池
+
+var TransportHandler *Transportor
+
+type Transportor struct {
+	TransportMap   map[string]*TransportItem
+	TransportSlice []*TransportItem
+	Locker         sync.RWMutex
+}
+
+//服务+对应的连接池
+type TransportItem struct {
+	Trans       *http.Transport
+	ServiceName string
+}
+
+func NewTransportorHandler() *Transportor {
+	return &Transportor{
+		TransportMap:   map[string]*TransportItem{},
+		TransportSlice: []*TransportItem{},
+		Locker:         sync.RWMutex{},
+	}
+}
+
+//根据服务获取对应的连接池
+func (t *Transportor) GetTransportor(service *ServiceDetail) (*http.Transport, error) {
+	//验证服务是否存在
+	for _, transTtem := range t.TransportSlice {
+		if transTtem.ServiceName == service.Info.ServiceName {
+			//服务存在
+			return transTtem.Trans, nil
+		}
+	}
+	trans := &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout: time.Duration(service.LoadBalance.UpstreamConnectTimeout), //连接的超时时间
+
+		}).DialContext,
+		MaxIdleConns:          service.LoadBalance.UpstreamMaxIdle,
+		IdleConnTimeout:       time.Duration(service.LoadBalance.UpstreamIdleTimeout),
+		ResponseHeaderTimeout: time.Duration(service.LoadBalance.UpstreamHeaderTimeout),
+	}
+	//不存在时
+	transItem := &TransportItem{
+		Trans:       trans,
+		ServiceName: service.Info.ServiceName,
+	}
+	t.TransportSlice = append(t.TransportSlice, transItem)
+	t.Locker.Lock()
+	defer t.Locker.Unlock()
+	t.TransportMap[service.Info.ServiceName] = transItem
+
+	return trans, nil
+}
+
+func init() {
+	//负载均衡管理器
+	//LoadBalancerHandler = NewLoadBalancerHandler()
+	//连接池
+	TransportHandler = NewTransportorHandler()
 }

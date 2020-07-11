@@ -15,7 +15,7 @@ import (
 	"strings"
 )
 
-func NewLoadBalanceReverseProxy(c *gin.Context, lb load_balance.LoadBalance, transport *http.Transport) *httputil.ReverseProxy {
+func NewLoadBalanceReverseProxy(c *gin.Context, lb load_balance.LoadBalance, trans *http.Transport) *httputil.ReverseProxy {
 	//请求协调者
 	director := func(req *http.Request) {
 		//todo Get（ 入参 ）
@@ -65,6 +65,7 @@ func NewLoadBalanceReverseProxy(c *gin.Context, lb load_balance.LoadBalance, tra
 		Director:       director,
 		ModifyResponse: modifyFunc,
 		ErrorHandler:   errFunc,
+		Transport:      trans, //连接池
 	}
 }
 
