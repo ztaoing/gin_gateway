@@ -98,13 +98,14 @@ func (l *LoadBalanceCheckConf) UpdateConf(conf []string) {
 
 }
 
-func NewLoadBalanceConf(format string, confIpWeight map[string]string) (*LoadBalanceCheckConf, error) {
+func NewLoadBalanceCheckConf(format string, confIpWeight map[string]string) (*LoadBalanceCheckConf, error) {
 	aList := []string{}
 	for item, _ := range confIpWeight {
 		aList = append(aList, item)
 
 	}
 	CheckConf := &LoadBalanceCheckConf{format: format, activeList: aList, confIpWeight: confIpWeight}
+	//health check
 	CheckConf.WatchConf()
 	return CheckConf, nil
 }

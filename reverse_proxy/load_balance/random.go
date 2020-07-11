@@ -42,7 +42,7 @@ func (r *RandomBalance) Next() string {
 
 }
 
-func (r *RandomBalance) Get() (string, error) {
+func (r *RandomBalance) Get(string) (string, error) {
 	return r.Next(), nil
 }
 

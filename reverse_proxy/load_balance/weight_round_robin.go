@@ -73,7 +73,7 @@ func (w *WeightRoundRobinBalance) Next() string {
 	return best.addr
 }
 
-func (w *WeightRoundRobinBalance) Get() (string, error) {
+func (w *WeightRoundRobinBalance) Get(string) (string, error) {
 	return w.Next(), nil
 }
 

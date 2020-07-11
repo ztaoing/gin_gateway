@@ -36,7 +36,7 @@ func (r *RoundRobinBalance) Next() string {
 	return curAddr
 }
 
-func (r *RoundRobinBalance) Get() (string, error) {
+func (r *RoundRobinBalance) Get(string) (string, error) {
 	return r.Next(), nil
 }
 
