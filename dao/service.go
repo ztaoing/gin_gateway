@@ -1,10 +1,11 @@
 package dao
 
 import (
-	"github.com/e421083458/golang_common/lib"
 	"github.com/gin-gonic/gin"
 	"github.com/go1234.cn/gin_scaffold/dto"
+	"github.com/go1234.cn/gin_scaffold/golang_common/lib"
 	"github.com/go1234.cn/gin_scaffold/public"
+	"github.com/pkg/errors"
 	"net/http/httptest"
 	"strings"
 	"sync"
@@ -71,7 +72,9 @@ func (s *ServiceManager) LoadOnce() error {
 		defer s.Locker.Unlock()
 
 		for _, listItem := range list {
-			serviceDetail, err := listItem.ServiceDetail(c, tx, &listItem)
+			//取
+			tmpItem := listItem
+			serviceDetail, err := tmpItem.ServiceDetail(c, tx, &tmpItem)
 			if err != nil {
 				s.err = err
 				return
@@ -99,9 +102,6 @@ func (s *ServiceManager) HTTPAccessMode(c *gin.Context) (*ServiceDetail, error) 
 
 	path := c.Request.URL.Path
 
-	matched := false
-	//todo
-	matchedService := &ServiceDetail{}
 	//选择ServiceSlice，无需加锁
 	for _, serviceItem := range s.ServiceSlice {
 		//是否是http服务
@@ -111,13 +111,20 @@ func (s *ServiceManager) HTTPAccessMode(c *gin.Context) (*ServiceDetail, error) 
 		}
 		//如果是域名的匹配方式
 		if serviceItem.HTTPRule.RuleType == public.HTTPRuleTypeDomain {
+			//找到 匹配到域名
 			if serviceItem.HTTPRule.Rule == host {
-				//匹配到域名
-				matched = true
-				matchedService = serviceItem
+				return serviceItem, nil
+			}
+		}
+
+		//域名前缀的设置
+		if serviceItem.HTTPRule.RuleType == public.HTTPRuleTypePrefixURL {
+			//找到
+			if strings.HasPrefix(path, serviceItem.HTTPRule.Rule) {
+				return serviceItem, nil
 			}
 		}
 	}
 
-	return nil, nil
+	return nil, errors.New("no matched service")
 }

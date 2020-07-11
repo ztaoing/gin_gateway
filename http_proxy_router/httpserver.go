@@ -2,9 +2,9 @@ package http_proxy_router
 
 import (
 	"context"
-	"github.com/e421083458/golang_common/lib"
 	"github.com/gin-gonic/gin"
 	"github.com/go1234.cn/gin_scaffold/cert_file"
+	"github.com/go1234.cn/gin_scaffold/golang_common/lib"
 	"github.com/go1234.cn/gin_scaffold/middleware"
 	"log"
 	"net/http"
@@ -17,6 +17,7 @@ var (
 )
 
 func HttpServerRun() {
+
 	gin.SetMode(lib.GetStringConf("proxy.base.debug_mode"))
 	//设置router 及中间件
 	r := InitRouter(middleware.RecoveryMiddleware(), middleware.RequestLog())
@@ -57,7 +58,7 @@ func HttpsServerRun() {
 		MaxHeaderBytes: 1 << uint(lib.GetIntConf("base.https.max_header_bytes")),
 	}
 
-	log.Printf(" [INFO] HttpsServerRun:%s\n", lib.GetStringConf("proxy.https.addr"))
+	log.Printf(" [INFO] Https_Server_Run:%s\n", lib.GetStringConf("proxy.https.addr"))
 	//设置证书
 	if err := HttpsSrvHandler.ListenAndServeTLS(cert_file.Path("server.crt"), cert_file.Path("server.key")); err != nil {
 		log.Fatalf(" [ERROR] HttpsServerRun:%s err:%v\n", lib.GetStringConf("proxy.https.addr"), err)

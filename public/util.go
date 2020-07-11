@@ -2,6 +2,7 @@ package public
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 )
 
@@ -15,4 +16,10 @@ func SaltPassword(salt, password string) string {
 	s2.Write([]byte(str1 + salt))
 	//格式化为16进制
 	return fmt.Sprintf("%x", s2.Sum(nil))
+}
+
+//对象 到 json的 转换
+func Obj2Json(s interface{}) string {
+	data, _ := json.Marshal(s)
+	return string(data)
 }

@@ -3,7 +3,7 @@
 * @Date:2020/7/10 上午8:50
  */
 
-package main
+package zk
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ var (
 	host = []string{"127.0.0.1:2181"}
 )
 
-func main() {
+func zkmain() {
 	conn, _, err := zk.Connect(host, 5*time.Second)
 	if err != nil {
 		panic(err)

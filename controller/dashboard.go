@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"github.com/e421083458/golang_common/lib"
 	"github.com/gin-gonic/gin"
 	"github.com/go1234.cn/gin_scaffold/dao"
 	"github.com/go1234.cn/gin_scaffold/dto"
+	"github.com/go1234.cn/gin_scaffold/golang_common/lib"
 	"github.com/go1234.cn/gin_scaffold/middleware"
 	"github.com/go1234.cn/gin_scaffold/public"
 	"github.com/pkg/errors"

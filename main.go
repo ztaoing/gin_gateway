@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
-	"github.com/e421083458/golang_common/lib"
+	"github.com/go1234.cn/gin_scaffold/dao"
+	"github.com/go1234.cn/gin_scaffold/golang_common/lib"
 	"github.com/go1234.cn/gin_scaffold/http_proxy_router"
-	"github.com/go1234.cn/gin_scaffold/router"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,7 +14,7 @@ var (
 	//dashaboard后台管理 server代理服务器
 	endpoint = flag.String("endpoint", "", "input endpoint dashaboard or server")
 	//配置文件路径
-	config = flag.String("config", "", "input config file like ./conf/dev/")
+	config = flag.String("config", "./conf/dev/", "input config file like ./conf/dev/")
 )
 
 func main() {
@@ -29,7 +29,8 @@ func main() {
 	}
 
 	if *endpoint == "dashboard" {
-		lib.InitModule("./conf/dev/", []string{"base", "mysql", "redis"})
+
+		/*lib.InitModule("./conf/dev/")
 		defer lib.Destroy()
 
 		//start
@@ -40,10 +41,14 @@ func main() {
 		<-quit
 
 		//stop
-		router.HttpServerStop()
+		router.HttpServerStop()*/
 	} else {
-		lib.InitModule(*config, []string{"base", "mysql", "redis"})
+		lib.InitModule(*config)
+
 		defer lib.Destroy()
+
+		//将服务加载到内存中
+		dao.ServiceManagerHandler.LoadOnce()
 
 		//start 80
 		go func() {
@@ -60,6 +65,7 @@ func main() {
 
 		//stop
 		http_proxy_router.HttpServerStop()
+		http_proxy_router.HttpsServerStop()
 	}
 
 }
