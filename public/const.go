@@ -13,6 +13,14 @@ const (
 	//接入方式
 	HTTPRuleTypePrefixURL = 0
 	HTTPRuleTypeDomain    = 1
+
+	RedisFlowDayKey  = "fload_day_count"
+	RedisFlowHourKey = "flow_hour_count"
+
+	//统计
+	FloatTotal        = "float_total"
+	FloatCountService = "flow_service"
+	FloatCountAPP     = "flow_app"
 )
 
 var (

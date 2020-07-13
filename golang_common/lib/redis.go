@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+//创建redis连接
 func RedisConnFactory(name string) (redis.Conn, error) {
 	if ConfRedisMap != nil && ConfRedisMap.List != nil {
 		for confName, cfg := range ConfRedisMap.List {

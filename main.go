@@ -5,6 +5,7 @@ import (
 	"github.com/go1234.cn/gin_scaffold/dao"
 	"github.com/go1234.cn/gin_scaffold/golang_common/lib"
 	"github.com/go1234.cn/gin_scaffold/http_proxy_router"
+	"github.com/go1234.cn/gin_scaffold/tcp_proxy_router"
 	"os"
 	"os/signal"
 	"syscall"
@@ -57,6 +58,11 @@ func main() {
 		//start 443
 		go func() {
 			http_proxy_router.HttpsServerRun()
+		}()
+
+		//tcp服务
+		go func() {
+			tcp_proxy_router.TcpServerRun()
 		}()
 
 		quit := make(chan os.Signal)

@@ -87,16 +87,23 @@ func (l *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.Loa
 		}
 	}
 	//前缀
-	schema := "http"
+	schema := "http://"
 	if service.HTTPRule.NeedHttps == 1 {
-		schema = "https"
+		schema = "https://"
+	}
+	//如果是tcp服务的时候
+	if service.Info.LoadType == public.LoadTypeTCP || service.Info.LoadType == public.LoadTypeGRPC {
+		schema = ""
 	}
 
-	//前缀方式
-	prefix := ""
-	if service.HTTPRule.RuleType == public.HTTPRuleTypePrefixURL {
-		prefix = service.HTTPRule.Rule
-	}
+	/*
+		不需要
+		//前缀方式
+		prefix := ""
+		if service.HTTPRule.RuleType == public.HTTPRuleTypePrefixURL {
+			prefix = service.HTTPRule.Rule
+		}
+	*/
 
 	ipList := service.LoadBalance.GetIPListByMode()
 	weightList := service.LoadBalance.GetWeightListByMode()
@@ -106,13 +113,13 @@ func (l *LoadBalancer) GetLoadBalancer(service *ServiceDetail) (load_balance.Loa
 		ipConf[v] = weightList[k]
 	}
 
-	Conf, err := load_balance.NewLoadBalanceCheckConf(fmt.Sprintf("%s://%s", schema, prefix), ipConf)
+	Conf, err := load_balance.NewLoadBalanceCheckConf(fmt.Sprintf("%s%s", schema, "%s"), ipConf)
 	if err != nil {
 		return nil, err
 	}
 
 	//生成负载均衡器
-	lb := load_balance.LoadBalanceFactoryWithConf(load_balance.LbWeightRoundRobin, Conf)
+	lb := load_balance.LoadBalanceFactoryWithConf(load_balance.LbType(service.LoadBalance.RoundType), Conf)
 
 	//保存到map和slice中
 	lbItem := &LoadBalanceItem{
@@ -163,14 +170,17 @@ func (t *Transportor) GetTransportor(service *ServiceDetail) (*http.Transport, e
 			return transTtem.Trans, nil
 		}
 	}
+
 	trans := &http.Transport{
 		DialContext: (&net.Dialer{
-			Timeout: time.Duration(service.LoadBalance.UpstreamConnectTimeout), //连接的超时时间
-
+			Timeout:   time.Duration(service.LoadBalance.UpstreamConnectTimeout) * time.Second, //连接的超时时间
+			KeepAlive: time.Second * 30,
 		}).DialContext,
 		MaxIdleConns:          service.LoadBalance.UpstreamMaxIdle,
-		IdleConnTimeout:       time.Duration(service.LoadBalance.UpstreamIdleTimeout),
-		ResponseHeaderTimeout: time.Duration(service.LoadBalance.UpstreamHeaderTimeout),
+		IdleConnTimeout:       time.Duration(service.LoadBalance.UpstreamIdleTimeout) * time.Second,
+		ResponseHeaderTimeout: time.Duration(service.LoadBalance.UpstreamHeaderTimeout) * time.Second,
+		ForceAttemptHTTP2:     true,
+		TLSHandshakeTimeout:   time.Second * 10,
 	}
 	//不存在时
 	transItem := &TransportItem{

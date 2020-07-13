@@ -19,12 +19,12 @@ func init() {
 
 //服务详情
 type ServiceDetail struct {
-	Info          *ServiceInfo   `json:"info" description:"基本信息"` //基本信息
-	HTTPRule      *HttpRule      `json:"http" description:""`
-	TCPRule       *TcpRule       `json:"tcp" description:""`
-	GRPCRule      *GrpcRule      `json:"grpc" description:""`
-	LoadBalance   *LoadBalance   `json:"load_balance" description:""`
-	AccessControl *AccessControl `json:"access_control" description:""`
+	Info          *ServiceInfo   `json:"info" description:"基本信息"`       //service基本信息
+	HTTPRule      *HttpRule      `json:"http" description:""`           //http规则
+	TCPRule       *TcpRule       `json:"tcp" description:""`            //tcp规则
+	GRPCRule      *GrpcRule      `json:"grpc" description:""`           //grpc规则
+	LoadBalance   *LoadBalance   `json:"load_balance" description:""`   //负载均衡规则
+	AccessControl *AccessControl `json:"access_control" description:""` //访问控制规则 黑名单 白名单
 }
 
 //服务管理
@@ -127,4 +127,19 @@ func (s *ServiceManager) HTTPAccessMode(c *gin.Context) (*ServiceDetail, error) 
 	}
 
 	return nil, errors.New("no matched service")
+}
+
+/*
+tcp处理
+*/
+
+func (s *ServiceManager) GetTcpServiceList() []*ServiceDetail {
+	list := []*ServiceDetail{}
+	for _, v := range s.ServiceSlice {
+		temp := v
+		if temp.Info.LoadType == public.LoadTypeTCP {
+			list = append(list, temp)
+		}
+	}
+	return list
 }

@@ -20,6 +20,7 @@ func HttpServerRun() {
 
 	gin.SetMode(lib.GetStringConf("proxy.base.debug_mode"))
 	//设置router 及中间件
+	//在RecoveryMiddleware中当出现panic的时候，recover会拦截panic
 	r := InitRouter(middleware.RecoveryMiddleware(), middleware.RequestLog())
 	HttpSrvHandler = &http.Server{
 		Addr:           lib.GetStringConf("proxy.http.addr"),
@@ -30,7 +31,7 @@ func HttpServerRun() {
 	}
 
 	log.Printf(" [INFO] http_proxy_run:%s\n", lib.GetStringConf("proxy.http.addr"))
-	if err := HttpSrvHandler.ListenAndServe(); err != nil {
+	if err := HttpSrvHandler.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf(" [ERROR] http_proxy_run:%s err:%v\n", lib.GetStringConf("proxy.http.addr"), err)
 	}
 
@@ -60,7 +61,7 @@ func HttpsServerRun() {
 
 	log.Printf(" [INFO] Https_Server_Run:%s\n", lib.GetStringConf("proxy.https.addr"))
 	//设置证书
-	if err := HttpsSrvHandler.ListenAndServeTLS(cert_file.Path("server.crt"), cert_file.Path("server.key")); err != nil {
+	if err := HttpsSrvHandler.ListenAndServeTLS(cert_file.Path("server.crt"), cert_file.Path("server.key")); err != nil && err != http.ErrServerClosed {
 		log.Fatalf(" [ERROR] HttpsServerRun:%s err:%v\n", lib.GetStringConf("proxy.https.addr"), err)
 	}
 

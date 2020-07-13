@@ -6,6 +6,7 @@
 package reverse_proxy
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go1234.cn/gin_scaffold/middleware"
 	"github.com/go1234.cn/gin_scaffold/reverse_proxy/load_balance"
@@ -20,9 +21,12 @@ func NewLoadBalanceReverseProxy(c *gin.Context, lb load_balance.LoadBalance, tra
 	director := func(req *http.Request) {
 		//todo Get（ 入参 ）
 		nextAddr, err := lb.Get(req.URL.String())
+		fmt.Println("nextAddr", nextAddr)
 		if err != nil || nextAddr == "" {
+			//在RecoveryMiddleware中当出现panic的时候，recover会拦截panic
 			panic("get next addr failed")
 		}
+
 		target, err := url.Parse(nextAddr)
 		if err != nil {
 			panic("parse addr failed")

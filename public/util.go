@@ -1,25 +1,38 @@
 package public
 
 import (
+	"crypto/md5"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"io"
 )
 
-func SaltPassword(salt, password string) string {
+func GenSaltPassword(salt, password string) string {
 	s1 := sha256.New()
 	s1.Write([]byte(password))
 	str1 := fmt.Sprintf("%x", s1.Sum(nil))
-
-	//加salt
 	s2 := sha256.New()
 	s2.Write([]byte(str1 + salt))
-	//格式化为16进制
 	return fmt.Sprintf("%x", s2.Sum(nil))
 }
 
-//对象 到 json的 转换
+//MD5 md5加密
+func MD5(s string) string {
+	h := md5.New()
+	io.WriteString(h, s)
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
 func Obj2Json(s interface{}) string {
-	data, _ := json.Marshal(s)
-	return string(data)
+	bts, _ := json.Marshal(s)
+	return string(bts)
+}
+func InStringSlice(slice []string, str string) bool {
+	for _, item := range slice {
+		if str == item {
+			return true
+		}
+	}
+	return false
 }

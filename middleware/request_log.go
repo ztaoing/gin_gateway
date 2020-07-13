@@ -54,8 +54,12 @@ func RequestOutLog(c *gin.Context) {
 
 func RequestLog() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		RequestInLog(c)
-		defer RequestOutLog(c)
+		if lib.GetBoolConf("base.log.file_writer.on") {
+			//开启的时候才记录日志文件
+			RequestInLog(c)
+			defer RequestOutLog(c)
+		}
+
 		c.Next()
 	}
 }
