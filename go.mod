@@ -10,6 +10,7 @@ require (
 	github.com/e421083458/go_gateway v0.0.0-20200620084504-d602eb8bc883
 
 	github.com/e421083458/gorm v1.0.1
+	github.com/e421083458/grpc-proxy v0.2.0
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/garyburd/redigo v1.6.0
 	github.com/gin-gonic/contrib v0.0.0-20191209060500-d6e26eeaa607
@@ -28,6 +29,7 @@ require (
 	github.com/swaggo/gin-swagger v1.2.0
 	github.com/swaggo/swag v1.6.5
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1
+	google.golang.org/grpc v1.30.0-dev.1
 	gopkg.in/go-playground/validator.v9 v9.29.0
 )
 

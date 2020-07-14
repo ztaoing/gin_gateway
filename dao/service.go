@@ -143,3 +143,18 @@ func (s *ServiceManager) GetTcpServiceList() []*ServiceDetail {
 	}
 	return list
 }
+
+/**
+grpc
+*/
+
+func (s *ServiceManager) GetGrpcServiceList() []*ServiceDetail {
+	list := []*ServiceDetail{}
+	for _, v := range s.ServiceSlice {
+		temp := v
+		if temp.Info.LoadType == public.LoadTypeTCP {
+			list = append(list, temp)
+		}
+	}
+	return list
+}
